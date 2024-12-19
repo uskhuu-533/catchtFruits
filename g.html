@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Falling Object Game</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+    canvas {
+      display: block;
+      background: #87CEEB;
+    }
+    #score {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 20px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div id="score">Score: 0</div>
+  <canvas id="gameCanvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const player = {
+      x: canvas.width / 2 - 25,
+      y: canvas.height - 50,
+      width: 50,
+      height: 50,
+      color: 'red',
+      speed: 7
+    };
+
+    const fallingObjects = [];
+    let score = 0;
+    const objectSpeed = 3;
+    const objectInterval = 1000;
+
+    function drawPlayer() {
+      ctx.fillStyle = player.color;
+      ctx.fillRect(player.x, player.y, player.width, player.height);
+    }
+
+    function drawFallingObject(obj) {
+      ctx.fillStyle = obj.color;
+      ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
+    }
+
+    function createFallingObject() {
+      const size = Math.random() * 20 + 20;
+      const x = Math.random() * (canvas.width - size);
+      fallingObjects.push({
+        x: x,
+        y: 0,
+        width: size,
+        height: size,
+        color: 'green'
+      });
+    }
+
+    function updateFallingObjects() {
+      for (let i = fallingObjects.length - 1; i >= 0; i--) {
+        const obj = fallingObjects[i];
+        obj.y += objectSpeed;
+
+        if (
+          obj.x < player.x + player.width &&
+          obj.x + obj.width > player.x &&
+          obj.y < player.y + player.height &&
+          obj.y + obj.height > player.y
+        ) {
+          fallingObjects.splice(i, 1);
+          score += 1;
+          document.getElementById('score').textContent = `Score: ${score}`;
+        } else if (obj.y > canvas.height) {
+          fallingObjects.splice(i, 1);
+        }
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawPlayer();
+      fallingObjects.forEach(drawFallingObject);
+    }
+
+    function update() {
+      updateFallingObjects();
+    }
+
+    function gameLoop() {
+      draw();
+      update();
+      requestAnimationFrame(gameLoop);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft' && player.x > 0) {
+        player.x -= player.speed;
+      } else if (e.key === 'ArrowRight' && player.x + player.width < canvas.width) {
+        player.x += player.speed;
+      }
+    });
+
+    setInterval(createFallingObject, objectInterval);
+    gameLoop();
+  </script>
+</body>
+</html>
